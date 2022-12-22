@@ -1,14 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
-
 import json
-from http import HTTPStatus
-from django.http import JsonResponse, HttpResponse,HttpResponseNotAllowed
-from django.shortcuts import get_object_or_404
-from django.urls import reverse
+from django.http import  HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
