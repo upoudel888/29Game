@@ -2,7 +2,7 @@ from django.http import HttpResponse,JsonResponse
 from django.http import  HttpResponse,HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 import json
-from . import utils
+from . import bot
 
 
 
@@ -22,7 +22,7 @@ def hi(request):
 def bid(request):
     if(request.method == 'POST'):
         data = json.loads(request.body)
-        bid_response = utils.predictBidValue(data)
+        bid_response = bot.predictBidValue(data)
         return JsonResponse(bid_response)
     return HttpResponseNotAllowed(["POST"])
 
@@ -30,7 +30,7 @@ def bid(request):
 def chooseTrump(request):
     if(request.method == "POST"):
         data = json.loads(request.body)
-        trump_choice = utils.predictTrump(data)
+        trump_choice = bot.predictTrump(data)
         return JsonResponse(trump_choice)
     return HttpResponseNotAllowed(['POST'])
 
@@ -38,6 +38,6 @@ def chooseTrump(request):
 def play(request):
     if(request.method == "POST"):
         data = json.loads(request.body)
-        play_response = utils.predictPlay(data)
+        play_response = bot.predictPlay(data)
         return JsonResponse(play_response)
     return HttpResponseNotAllowed(['POST'])
