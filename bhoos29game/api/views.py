@@ -1,35 +1,43 @@
-from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
-
-import json
-from django.http import  HttpResponse
+from django.http import  HttpResponse,HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
+import json
 from . import utils
+
 
 
 def home(request):
     return HttpResponse("This is the home page")
 
 @csrf_exempt
-@api_view(['GET'])
 def hi(request):
-    return JsonResponse({"value":"hello"})
+    if(request.method == 'GET'):
+        return JsonResponse({"value":"hello"})
+        
+    # this sends 405 status code if any requests other than GET is made
+    return HttpResponseNotAllowed(["GET"]) 
 
 
 @csrf_exempt
-@api_view(['POST','GET'])
 def bid(request):
-    bid_response = utils.predictBidValue(request.data)
-    return JsonResponse(bid_response)
+    if(request.method == 'POST'):
+        data = json.loads(request.body)
+        bid_response = utils.predictBidValue(data)
+        return JsonResponse(bid_response)
+    return HttpResponseNotAllowed(["POST"])
 
-@api_view(['POST','GET'])
+@csrf_exempt
 def chooseTrump(request):
-    trump_choice = utils.predictTrump(request.data)
-    return JsonResponse(trump_choice)
+    if(request.method == "POST"):
+        data = json.loads(request.body)
+        trump_choice = utils.predictTrump(data)
+        return JsonResponse(trump_choice)
+    return HttpResponseNotAllowed(['POST'])
 
-@api_view(['POST','GET'])
+@csrf_exempt
 def play(request):
-    play_response = utils.predictPlay(request.data)
-    return JsonResponse(play_response)
+    if(request.method == "POST"):
+        data = json.loads(request.body)
+        play_response = utils.predictPlay(data)
+        return JsonResponse(play_response)
+    return HttpResponseNotAllowed(['POST'])
