@@ -13,7 +13,7 @@ def home(request):
 def hi(request):
     if(request.method == 'GET'):
         return JsonResponse({"value":"hello"})
-        
+
     # this sends 405 status code if any requests other than GET is made
     return HttpResponseNotAllowed(["GET"]) 
 
