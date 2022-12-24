@@ -2,7 +2,7 @@ import random
 from functools import reduce
 from .utils import *
 # cards
-cards = ['J', '9', 'A', 'T', 'K', 'Q', '8', '7']
+cards = ['J', '9', '1', 'T', 'K', 'Q', '8', '7']
 card_weights = [3, 2, 1.5, 1, 0.3, 0.2, 0.1, 0]
 enumWeights = dict(zip(cards, card_weights))
 
@@ -13,6 +13,7 @@ suit = ['H', 'C', 'D', 'S']
 # note that two players cannot have a same bid
 '''
 
+<<<<<<< HEAD
 {'playerId': 'A2',
 'playerIds': ['A1', 'B1', 'A2', 'B2'],
 'cards': ['JS', 'TS', 'KH', '9C'],
@@ -23,8 +24,30 @@ suit = ['H', 'C', 'D', 'S']
               'defenderBid': 16,
               'challengerBid': 17}}
 '''
+=======
+# {'playerId': 'A2',
+# 'playerIds': ['A1', 'B1', 'A2', 'B2'],
+# 'cards': ['JS', 'TS', 'KH', '9C'],
+# 'timeRemaining': 1000,
+# 'bidHistory': [['A1', 16], ['B1', 0]],
+# 'bidState': { 'defenderId': 'A1',  # current defender
+#               'challengerId': 'B1',  #current challenger
+#               'defenderBid': 16,
+#               'challengerBid': 17}}
+
+#naya api ko request yesto raexa .. aafai herr
+# {'playerId': 'You-1', 'playerIds': ['You-0', 'Opponent-0', 'You-1', 'Opponent-1'], 'cards': ['JC', 'TD', '9D', 'KC'], 'timeRemaining': 1500, 'bidHistory': [['You-0', 0], ['Opponent-0', 16]], 'bidState': {'defenderId': 'Opponent-0', 'challengerId': 'You-1', 'defenderBid': 16, 'challengerBid': 0}}
+
+# yo function lai takka conditions herera ramro banauna parxa
+def scoreInHandCards(cards): 
+    myCardWeights = [enumWeights[i[0]] for i in cards]  # weight of my cards
+    return 10 + sum(myCardWeights) * 1.5 # yo 1.5 tettikae banako ho haii
+
+>>>>>>> 90b0e5e2f0539e60833e2c9cc474a1da85eda61b
 
 def predictBidValue(game):
+    print("Predicting bid for : ")
+    print(game)
     bid = 0
     myHandValue = round(scoreInHandCards(game['cards']))
     myTag = game['playerId'][1] # A B
@@ -55,7 +78,7 @@ def predictBidValue(game):
         # sathi le defend gariraxa opponent ko higher score bata
         else:
             friendsBid = game['bidState']['defenderBid']
-            avgScore = (friendsBid + myHandValue)//2
+            avgScore = friendsBid + (myHandValue-10)//2
             if(avgScore > game['bidState']['challengerBid']):
                 bid = avgScore
 
@@ -68,25 +91,31 @@ def predictBidValue(game):
 # 'bidHistory': [['A1', 16], ['B1', 0]]}
 
 def predictTrump(game):
+    print("Predicting Trump for : ")
+    print(game)
     # tara bid history bata keii keii infer garna sakinxa
     # aahile lai aafu sanga jun dherai xa tyo rakhne tw hola ni
-        # Kunai suit ko jack pareko xa vane tyeslai naganne .. tyesko weight chhai 0 rakhne .. vannale hataidiye pani vayo
+        # 3-4 ota length vako kunai card aaxa vane tyellai nai choose garne
         # kunai suit ma 9 A 10 pareko xa vane tyelle jitne parama weights le multiply garne ani tyelai prefer garne
 
-    # jack ko cards lai hataune    
-    cards_JacksRemoved = list(filter(lambda x : x[0] != 'J',game['cards']))
 
-    suitsInHand = [x[1] for x in cards_JacksRemoved]
+
+    suitsInHand = [x[1] for x in game['cards']]
     suitCount = [suitsInHand.count(x) for x in suit]
 
+    maxCount = max(suitCount)
+
+    if(maxCount == 4): return {'suit':suit[suitCount.index(4)]}
+    if(maxCount == 3): return {'suit':suit[suitCount.index(3)]}
+    
     # hareko suit ko card ko weighted sum nikalne
     suitWeights = [0,0,0,0]
     index = 0
     for x in suit:
-        cards = [enumWeights[j[0]] for j in cards_JacksRemoved if j[1]==x]
+        suitCardsWeights = [enumWeights[j[0]] for j in game['cards'] if j[1]==x]
         if(len(cards)):
             # no. of cards of a suit * (sum of weights of a suit)
-            suitWeights[index] = suitCount[index] * reduce(lambda a,b : a+b ,cards)
+            suitWeights[index] = suitCount[index] + sum(suitCardsWeights)
         index += 1
 
     return {"suit": suit[suitWeights.index(max(suitWeights))]}
@@ -104,21 +133,14 @@ def predictTrump(game):
 
 
 def predictPlay(game):
+    print("Predicting play for : ")
     print(game)
     return {"card": random.choice(game['cards'])}
 
 
 if __name__ == '__main__':
     print(
-    predictTrump({'playerId': 'A2',
-    'playerIds': ['A1', 'B1', 'A2', 'B2'],
-    'cards': ['JS', 'TS', '9S', '9C'],
-    'timeRemaining': 1000,
-    'bidHistory': [['A1', 16], ['B1', 0]],
-    'bidState': { 'defenderId': 'A1',
-                  'challengerId': 'B1',
-                  'defenderBid': 16,
-                  'challengerBid': 17}})
+    predictBidValue({'playerId': 'You-0', 'playerIds': ['You-0', 'Opponent-0', 'You-1', 'Opponent-1'], 'cards': ['KS', '1S', '8D', '9S'], 'timeRemaining': 1500, 'bidHistory': [], 'bidState': {'defenderId': 'You-0', 'challengerId': 'Opponent-0', 'defenderBid': 0, 'challengerBid': 0}})
     )
     #HCDS
 
