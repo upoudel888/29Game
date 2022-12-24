@@ -11,127 +11,100 @@ suit = ['H', 'C', 'D', 'S']
 
 
 # note that two players cannot have a same bid
+
+
+
+
+
 '''
-
-<<<<<<< HEAD
-{'playerId': 'A2',
-'playerIds': ['A1', 'B1', 'A2', 'B2'],
-'cards': ['JS', 'TS', 'KH', '9C'],
-'timeRemaining': 1000,
-'bidHistory': [['A1', 16], ['B1', 0]],
-'bidState': { 'defenderId': 'A1',  # current defender
-              'challengerId': 'B1',  #current challenger
-              'defenderBid': 16,
-              'challengerBid': 17}}
+{'playerId': 'You-1', 
+'playerIds': ['You-0', 'Opponent-0', 'You-1', 'Opponent-1'], 
+'cards': ['JC', 'TD', '9D', 'KC'],
+'timeRemaining': 1500, 
+'bidHistory': [['You-0', 0], ['Opponent-0', 16]], 
+'bidState': {
+    'defenderId': 'Opponent-0', 
+    'challengerId': 'You-1',
+    'defenderBid': 16, 
+    'challengerBid': 0}}
 '''
-=======
-# {'playerId': 'A2',
-# 'playerIds': ['A1', 'B1', 'A2', 'B2'],
-# 'cards': ['JS', 'TS', 'KH', '9C'],
-# 'timeRemaining': 1000,
-# 'bidHistory': [['A1', 16], ['B1', 0]],
-# 'bidState': { 'defenderId': 'A1',  # current defender
-#               'challengerId': 'B1',  #current challenger
-#               'defenderBid': 16,
-#               'challengerBid': 17}}
-
-#naya api ko request yesto raexa .. aafai herr
-# {'playerId': 'You-1', 'playerIds': ['You-0', 'Opponent-0', 'You-1', 'Opponent-1'], 'cards': ['JC', 'TD', '9D', 'KC'], 'timeRemaining': 1500, 'bidHistory': [['You-0', 0], ['Opponent-0', 16]], 'bidState': {'defenderId': 'Opponent-0', 'challengerId': 'You-1', 'defenderBid': 16, 'challengerBid': 0}}
-
-# yo function lai takka conditions herera ramro banauna parxa
-def scoreInHandCards(cards): 
-    myCardWeights = [enumWeights[i[0]] for i in cards]  # weight of my cards
-    return 10 + sum(myCardWeights) * 1.5 # yo 1.5 tettikae banako ho haii
-
->>>>>>> 90b0e5e2f0539e60833e2c9cc474a1da85eda61b
 
 def predictBidValue(game):
     print("Predicting bid for : ")
     print(game)
-    bid = 0
-    myHandValue = round(scoreInHandCards(game['cards']))
-    myTag = game['playerId'][1] # A B
+    optimumBid = optimumBidVal(game['cards'])
+    print(f"optimum bid: {optimumBid}")
+    # get bid for challenger and defender
+    challengerBid=game['bidState']['challengerBid']
+    defenderBid=game['bidState']['defenderBid']
 
     myTurn = len(game['bidHistory'])
+    
     # yedi surumaii mero bid xa vane mero cards herera maile bid hanna paryo
+    # if my score is more than 6 i'll only bid 16 if my turn is 1st
     if (myTurn == 0):
-        if(myHandValue >= 16): bid = myHandValue
+        if(optimumBid >= 16): return {"bid": 16}
     # yedi second ma mero turn xa vane defender(i.e first ma bid garne opponent hunxa) ko bid herera mero dherai xa vane hanna paryo
     elif (myTurn == 1):
-        if(game.bidState['defenderBid'] < myHandValue):
-            if(myHandValue > 16): bid = myHandValue
-    else:
-        # sathi gunda sathi tero
-        # Note : challenge garne manxe ko bid defend garne ko vanda thulo hunxa (Hola XD)
-        # sathi le challenge hanirathyo vane
-        if(game['bidState']['challengerId'][0] == myTag ):
-            friendsBid = game['bidState']['challengerBid']
-            opponentBid = game['bidState']['DefenderBid']
-            # sabb le pass pass gardai gardai hamro palo aayo vane 
-            if(friendsBid == 0 and  opponentBid == 0):
-                if(myHandValue > 16): bid = myHandValue  
-            #sathi le jitiraxa vane
-            else:
-                # aafno haat ko value add garera raise garne bid (milxa vane)
-                bid = game['bidState']['challengerBid'] + (myHandValue - 10)//2
-            
-        # sathi le defend gariraxa opponent ko higher score bata
+        if(defenderBid==0 and optimumBid>=16):
+            return {'bid':16}
+        elif(defenderBid < optimumBid):
+            return {"bid":defenderBid+1}
         else:
-            friendsBid = game['bidState']['defenderBid']
-            avgScore = friendsBid + (myHandValue-10)//2
-            if(avgScore > game['bidState']['challengerBid']):
-                bid = avgScore
+            return {'bid':0}
+    else:
+        # check if whether i am challenger or defender
+        # looking at the payload i found we are either challenger or defender
+        if(game['bidState']['challengerId'] == game['playerId'] ):
+            if(defenderBid==0 and optimumBid>=16):
+                return {'bid':16}
 
-    return {"bid": bid}
+            elif(defenderBid<optimumBid and defenderBid!=0):
+                # raise bid 1 more than defender if our optimum bid is more 
+                return {'bid':defenderBid+1}
+            else:
+                return {'bid':0}
+        # in case i am defender
+        else:
+            if(challengerBid==0 and optimumBid>=16):
+                return {'bid':16}
+            elif(challengerBid<=optimumBid and challengerBid!=0):
+                # we don't have to bid more than challenger we can just match the bid
+                return {'bid':challengerBid}
+        # sathi le defend gariraxa opponent ko higher score bata
 
-# {'playerId': 'A2',
-#  'playerIds': ['A1', 'B1', 'A2', 'B2'],
-# 'cards': ['JS', 'TS', 'KH', '9C'],
-# 'timeRemaining': 1000,
-# 'bidHistory': [['A1', 16], ['B1', 0]]}
+    return {"bid": 0}
+
+
+'''
+{'playerId': 'You-1', 
+'playerIds': ['You-0', 'Opponent-0', 'You-1', 'Opponent-1'],
+'cards': ['7S', 'JS', 'TS', '9H'], 
+'timeRemaining': 1483, 
+'bidHistory': [['You-0', 0], ['Opponent-0', 16], ['You-1', 20], ['Opponent-0', 0], ['Opponent-1', 0]]}
+'''
 
 def predictTrump(game):
     print("Predicting Trump for : ")
     print(game)
     # tara bid history bata keii keii infer garna sakinxa
-    # aahile lai aafu sanga jun dherai xa tyo rakhne tw hola ni
-        # 3-4 ota length vako kunai card aaxa vane tyellai nai choose garne
-        # kunai suit ma 9 A 10 pareko xa vane tyelle jitne parama weights le multiply garne ani tyelai prefer garne
+    trump=selectTrump(game['cards'])
+    return {"suit":trump }
 
 
-
-    suitsInHand = [x[1] for x in game['cards']]
-    suitCount = [suitsInHand.count(x) for x in suit]
-
-    maxCount = max(suitCount)
-
-    if(maxCount == 4): return {'suit':suit[suitCount.index(4)]}
-    if(maxCount == 3): return {'suit':suit[suitCount.index(3)]}
-    
-    # hareko suit ko card ko weighted sum nikalne
-    suitWeights = [0,0,0,0]
-    index = 0
-    for x in suit:
-        suitCardsWeights = [enumWeights[j[0]] for j in game['cards'] if j[1]==x]
-        if(len(cards)):
-            # no. of cards of a suit * (sum of weights of a suit)
-            suitWeights[index] = suitCount[index] + sum(suitCardsWeights)
-        index += 1
-
-    return {"suit": suit[suitWeights.index(max(suitWeights))]}
-
-# {'playerId': 'A2',
-# 'playerIds': ['A1', 'B1', 'A2', 'B2'],
-# 'timeRemaining': 1500,
-# 'teams': [{'players': ['A1', 'A2'], 'bid': 17, 'won': 0},
-#           {'players': ['B1', 'B2'], 'bid': 17, 'won': 4}],
-# 'cards': ['JS', 'TS', 'KH', '9C', 'JD', '7D', '8D'],
-# 'bidHistory': [['A1', 16], ['B1', 17], ['A1', 17], ['B1', 0], ['A2', 0], ['B2', 0]],
-# 'played': ['9S', '1S', '8S'], 'handsHistory': [['A1', ['7H', '1H', '8H', 'JH'], 'B2']], '
-# trumpSuit': False,
-# 'trumpRevealed': False}
-
-
+'''
+{'playerId': 'You-1',
+'playerIds': ['You-0', 'Opponent-0', 'You-1', 'Opponent-1'],
+'cards': ['QC', 'QD', 'JS', 'TS', 'TH', '9H', '8S', '7S'],
+'timeRemaining': 1468, 
+'bidHistory': [['You-0', 0], ['Opponent-0', 16], ['You-1', 20], ['Opponent-0', 0], ['Opponent-1', 0]], 
+'played': ['JC', '7C'], 
+'teams':[{'players': ['You-0', 'You-1'], 'bid': 20, 'won': 0}, 
+        {'players': ['Opponent-0', 'Opponent-1'],'bid': 0, 'won': 0}], 
+'handsHistory': [], 
+'trumpSuit': 'S', 
+'trumpRevealed': False}
+'''
 def predictPlay(game):
     print("Predicting play for : ")
     print(game)
