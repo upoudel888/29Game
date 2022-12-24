@@ -1,6 +1,6 @@
 import random
 from functools import reduce
-# from . import utils
+from .utils import *
 # cards
 cards = ['J', '9', 'A', 'T', 'K', 'Q', '8', '7']
 card_weights = [3, 2, 1.5, 1, 0.3, 0.2, 0.1, 0]
@@ -11,23 +11,18 @@ suit = ['H', 'C', 'D', 'S']
 
 
 # note that two players cannot have a same bid
+'''
 
-# {'playerId': 'A2',
-# 'playerIds': ['A1', 'B1', 'A2', 'B2'],
-# 'cards': ['JS', 'TS', 'KH', '9C'],
-# 'timeRemaining': 1000,
-# 'bidHistory': [['A1', 16], ['B1', 0]],
-# 'bidState': { 'defenderId': 'A1',  # current defender
-#               'challengerId': 'B1',  #current challenger
-#               'defenderBid': 16,
-#               'challengerBid': 17}}
-
-
-# yo function lai takka conditions herera ramro banauna parxa
-def scoreInHandCards(cards):
-    myCardWeights = [enumWeights[i[0]] for i in cards]  # weight of my cards
-    return 10 + reduce(lambda a, b: a+b, myCardWeights) * 1.5 # yo 1.5 tettikae banako ho haii
-
+{'playerId': 'A2',
+'playerIds': ['A1', 'B1', 'A2', 'B2'],
+'cards': ['JS', 'TS', 'KH', '9C'],
+'timeRemaining': 1000,
+'bidHistory': [['A1', 16], ['B1', 0]],
+'bidState': { 'defenderId': 'A1',  # current defender
+              'challengerId': 'B1',  #current challenger
+              'defenderBid': 16,
+              'challengerBid': 17}}
+'''
 
 def predictBidValue(game):
     bid = 0
